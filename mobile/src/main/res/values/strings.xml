@@ -5,4 +5,6 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <string name="duration">%1s miles long</string>
+    <string name="distance">%1s miles away</string>
 </resources>
