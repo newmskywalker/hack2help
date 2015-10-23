@@ -1,6 +1,7 @@
 package com.mateoj.hack2help.ui.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,7 +9,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.GoogleMap;
 import com.mateoj.hack2help.R;
+import com.mateoj.hack2help.TourDetailActivity;
 import com.mateoj.hack2help.data.model.Tour;
 import com.squareup.picasso.Picasso;
 
@@ -18,11 +21,13 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import de.greenrobot.event.EventBus;
 
 /**
  * Created by jose on 10/23/15.
  */
-public class TourAdapter extends RecyclerView.Adapter<TourAdapter.TourViewHolder> {
+public class TourAdapter extends RecyclerView.Adapter {
+    private static final int VIEWTYPE_HEADER = 345;
     private Context mContext;
     private LayoutInflater mInflater;
     private List<Tour> mTours;
@@ -42,38 +47,70 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.TourViewHolder
     }
 
     @Override
-    public TourViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.row_tour, parent, false);
-        return new TourViewHolder(view);
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, final int viewType) {
+        if (viewType != VIEWTYPE_HEADER) {
+            View view = mInflater.inflate(R.layout.row_tour, parent, false);
+            final TourViewHolder viewHolder = new TourViewHolder(view);
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    EventBus.getDefault().postSticky(getItem(viewHolder.getAdapterPosition() - 1));
+                    Intent intent = new Intent(mContext, TourDetailActivity.class);
+                    mContext.startActivity(intent);
+                }
+            });
+            return viewHolder;
+        }else {
+            View view = mInflater.inflate(R.layout.main_list_header, parent, false);
+            return new HeaderViewholder(view);
+        }
     }
 
     @Override
-    public void onBindViewHolder(TourViewHolder holder, int position) {
-        Tour tour = getItem(position);
-        if (tour == null)
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        if (position == 0)
             return;
 
-        holder.title.setText(tour.getTitle());
-        holder.description.setText(tour.getDescription());
-        holder.distance.setText(
+        Tour tour = getItem(position - 1);
+        if (tour == null)
+            return;
+        TourViewHolder viewHolder = (TourViewHolder) holder;
+        viewHolder.title.setText(tour.getTitle());
+        viewHolder.description.setText(tour.getDescription());
+        viewHolder.distance.setText(
                 String.format(mContext.getString(R.string.distance),
                         NumberFormat.getInstance().format(tour.getDistance())));
-        holder.duration.setText(mContext.getString(R.string.duration,
+        viewHolder.duration.setText(mContext.getString(R.string.duration,
                 NumberFormat.getInstance().format(tour.getDuration())));
-
-        Picasso.with(mContext)
-                .load(tour.getThumbUrl())
-                .into(holder.thumb);
+        if (!tour.getThumbUrl().equals(""))
+            Picasso.with(mContext)
+                    .load(tour.getThumbUrl())
+                    .placeholder(R.drawable.placeholder)
+                    .error(R.drawable.placeholder)
+                    .into(viewHolder.thumb);
+        else
+            Picasso.with(mContext)
+                .load(R.drawable.placeholder)
+                .into(viewHolder.thumb);
     }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (position == 0)
+            return VIEWTYPE_HEADER;
+
+        return super.getItemViewType(position);
+    }
+
 
     public Tour getItem(int pos)
     {
-        return (pos < getItemCount()) ? mTours.get(pos) : null;
+        return (pos < getItemCount()) ? mTours.get(pos)  : null;
     }
 
     @Override
     public int getItemCount() {
-        return (mTours == null) ? 0 : mTours.size();
+        return (mTours == null) ? 1 : mTours.size() + 1;
     }
 
     public static class TourViewHolder extends RecyclerView.ViewHolder {
@@ -92,9 +129,28 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.TourViewHolder
         @Bind(R.id.distance)
         TextView distance;
 
-        public TourViewHolder(View itemView) {
+        public TourViewHolder(final View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+        }
+    }
+
+    public static class HeaderViewholder extends RecyclerView.ViewHolder {
+        @Bind(R.id.mapView)
+        ImageView mapView;
+
+        GoogleMap map;
+        public HeaderViewholder(View itemView) {
+            super(itemView);
+            ButterKnife.bind(this, itemView);
+            Picasso.with(itemView.getContext())
+                    .load(buildMapUlr())
+                    .into(mapView);
+        }
+
+        public String buildMapUlr()
+        {
+            return "https://maps.googleapis.com/maps/api/staticmap?center=Brooklyn+Bridge,New+York,NY&zoom=13&size=600x300&maptype=roadmap&markers=color:blue%7Clabel:S%7C40.702147,-74.015794&markers=color:green%7Clabel:G%7C40.711614,-74.012318 &markers=color:red%7Clabel:C%7C40.718217,-73.998284&key=" + mapView.getContext().getString(R.string.mapsApiKey);
         }
     }
 }
