@@ -30,30 +30,32 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
             tools:text="Granby Street History Tour"/>
         <TextView
-            android:id="@+id/description"
+            android:id="@+id/distance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/title"
             android:layout_toRightOf="@id/image"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            tools:text="An awesome historic tour of the city of Norfolk at granby street and monticello"/>
-        <TextView
-            android:id="@+id/distance"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_toRightOf="@id/image"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"/>
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"/>
         <TextView
             android:id="@+id/duration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
+            android:layout_below="@id/title"
             android:layout_toRightOf="@id/distance"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:layout_marginRight="@dimen/activity_horizontal_margin"/>
+        <TextView
+            android:id="@+id/description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/activity_vertical_margin"
+            android:layout_below="@id/distance"
+            android:layout_toRightOf="@id/image"
+            android:maxLines="3"
+            android:ellipsize="marquee"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            tools:text="An awesome historic tour of the city of Norfolk at granby street and monticello"/>
 
     </RelativeLayout>
 </android.support.v7.widget.CardView>
