@@ -1,7 +1,6 @@
 package com.mateoj.hack2help;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -16,14 +15,15 @@ import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.mateoj.hack2help.data.model.Node;
 import com.mateoj.hack2help.data.model.Tour;
 import com.mateoj.hack2help.util.Callback;
@@ -156,6 +156,7 @@ public class TourDetailActivity extends LocationActivity implements OnMapReadyCa
 
         LatLng here = new LatLng(36.8475, -76.2913);
         currentMarker = googleMap.addMarker(new MarkerOptions().position(here).title("Me"));
+        currentMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_directions_walk_36dp));
 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(here, DEFAULT_ZOOM_LEVEL));
 
@@ -180,21 +181,22 @@ public class TourDetailActivity extends LocationActivity implements OnMapReadyCa
                 PolylineOptions polylineOptions = new PolylineOptions();
                 for (Node node : result)
                 {
-                    googleMap.addMarker(new MarkerOptions()
-                            .position(LocationUtils.geoPointToLatLng(node.getLocation()))
-                            .title(node.getTitle()));
+                    Marker maker = googleMap.addMarker(new MarkerOptions()
+                            .position(LocationUtils.geoPointToLatLng(node.getLocation())).title(node.getTitle()));
+
+                    maker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_place_blue_24dp));
                     builder.include(LocationUtils.geoPointToLatLng(node.getLocation()));
                     polylineOptions.add(LocationUtils.geoPointToLatLng(node.getLocation()));
                 }
 
                 polylineOptions
                     .width(15)
-                    .color(Color.BLUE)
+                    .color(getResources().getColor(R.color.colorAccent))
                     .geodesic(true);
 
                 Polyline polyline = googleMap.addPolyline(polylineOptions);
 
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 0));
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 100));
             }
 
             @Override

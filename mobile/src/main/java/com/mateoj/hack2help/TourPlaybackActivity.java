@@ -3,7 +3,6 @@ package com.mateoj.hack2help;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.location.Location;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -14,6 +13,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -24,14 +24,14 @@ import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.mateoj.hack2help.data.model.Node;
 import com.mateoj.hack2help.data.model.Tour;
 import com.mateoj.hack2help.event.EnterFence;
@@ -59,6 +59,7 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
     private Marker currentMarker;
     WifiManager.WifiLock wifiLock;
     GoogleMap mGoogleMap;
+    private boolean needsTocenterOnUser = true;
 
     private Tour mTour;
     FloatingActionButton playPauseButton;
@@ -110,7 +111,7 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
         mGoogleMap = googleMap;
         LatLng here = new LatLng(36.8475, -76.2913);
         currentMarker = googleMap.addMarker(new MarkerOptions().position(here).title("Me"));
-        currentMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_account_circle_24dp));
+        currentMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_directions_walk_36dp));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(here, DEFAULT_ZOOM_LEVEL));
         drawMarks(googleMap);
     }
@@ -170,8 +171,10 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
             @Override
             public void run() {
                 if (mGoogleMap != null)
-                    mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(CLOSE_ZOOM_LEVEL));
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                            LocationUtils.geoPointToLatLng(node.getLocation()), CLOSE_ZOOM_LEVEL));
 
+                playPauseButton.show();
                 Snackbar.make(findViewById(android.R.id.content), node.getTitle(),
                         Snackbar.LENGTH_LONG).show();
             }
@@ -206,14 +209,18 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(DEFAULT_ZOOM_LEVEL));
+                    mGoogleMap.animateCamera(CameraUpdateFactory
+                            .newLatLngZoom(currentMarker.getPosition(), DEFAULT_ZOOM_LEVEL));
                 }
             });
         }
 
         boolean isDone = true;
-        for (Node node : mNodes)
-            isDone = node.isVisited();
+        for (Node node : mNodes) {
+            if (!node.isVisited())
+                isDone = false;
+        }
+
         if (isDone) {
             Toast.makeText(this, "DONE", Toast.LENGTH_LONG).show();
             DialogFragment fragment = new DoneDialogFragment();
@@ -242,6 +249,13 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
         LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, getFenceStringList());
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == android.R.id.home) {
+            EventBus.getDefault().postSticky(mTour);
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     private void setUpGeofences()
     {
@@ -290,15 +304,16 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
                 PolylineOptions polylineOptions = new PolylineOptions();
                 for (Node node : result)
                 {
-                    googleMap.addMarker(new MarkerOptions()
-                            .position(LocationUtils.geoPointToLatLng(node.getLocation()))
-                            .title(node.getTitle()));
+                    Marker maker = googleMap.addMarker(new MarkerOptions()
+                            .position(LocationUtils.geoPointToLatLng(node.getLocation())).title(node.getTitle()));
+
+                    maker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_place_blue_24dp));
                     polylineOptions.add(LocationUtils.geoPointToLatLng(node.getLocation()));
                 }
 
                 polylineOptions
                     .width(15)
-                    .color(Color.BLUE)
+                    .color(getResources().getColor(R.color.colorAccent))
                     .geodesic(true);
 
                 Polyline polyline = googleMap.addPolyline(polylineOptions);
@@ -326,7 +341,12 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
 
     @Override
     public void onLocationChanged(Location location) {
-        if (currentMarker != null)
+        if (currentMarker != null) {
             currentMarker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+            if (needsTocenterOnUser) {
+                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), DEFAULT_ZOOM_LEVEL));
+                needsTocenterOnUser = false;
+            }
+        }
     }
 }
