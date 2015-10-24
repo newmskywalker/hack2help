@@ -61,6 +61,7 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
     GoogleMap mGoogleMap;
 
     private Tour mTour;
+    FloatingActionButton playPauseButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,14 +82,20 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        playPauseButton = (FloatingActionButton) findViewById(R.id.play_pause);
+        playPauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                    playPauseButton.setImageResource(R.drawable.ic_media_play);
+                } else {
+                    mediaPlayer.start();
+                    playPauseButton.setImageResource(R.drawable.ic_media_pause);
+                }
             }
         });
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         wifiLock = ((WifiManager) getSystemService(Context.WIFI_SERVICE))
@@ -150,6 +157,7 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
             mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mediaPlayer) {
+                    playPauseButton.setImageResource(R.drawable.ic_media_play);
                     wifiLock.release();
                 }
             });
