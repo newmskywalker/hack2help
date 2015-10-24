@@ -30,8 +30,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.mateoj.hack2help.data.model.Node;
 import com.mateoj.hack2help.data.model.Tour;
 import com.mateoj.hack2help.event.EnterFence;
@@ -301,22 +301,15 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
                             LocationUtils.geoPointToLatLng(result.get(0).getLocation()), DEFAULT_ZOOM_LEVEL));
                 }
 
-                PolylineOptions polylineOptions = new PolylineOptions();
                 for (Node node : result)
                 {
                     Marker maker = googleMap.addMarker(new MarkerOptions()
                             .position(LocationUtils.geoPointToLatLng(node.getLocation())).title(node.getTitle()));
 
                     maker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_place_blue_24dp));
-                    polylineOptions.add(LocationUtils.geoPointToLatLng(node.getLocation()));
                 }
 
-                polylineOptions
-                    .width(15)
-                    .color(getResources().getColor(R.color.colorAccent))
-                    .geodesic(true);
-
-                Polyline polyline = googleMap.addPolyline(polylineOptions);
+                new Pathing(googleMap, getResources().getColor(R.color.colorAccent)).addRoutes(result);
             }
 
             @Override
