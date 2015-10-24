@@ -309,7 +309,7 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
                     maker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_place_blue_24dp));
                 }
 
-                new Pathing(googleMap, getResources().getColor(R.color.colorAccent)).addRoutes(result);
+                new Pathing(googleMap, getResources().getColor(R.color.colorAccent), getString(R.string.mapsApiKey)).addRoutes(result);
             }
 
             @Override
