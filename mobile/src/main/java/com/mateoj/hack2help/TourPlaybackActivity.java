@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Toast;
@@ -207,6 +208,8 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
             isDone = node.isVisited();
         if (isDone) {
             Toast.makeText(this, "DONE", Toast.LENGTH_LONG).show();
+            DialogFragment fragment = new DoneDialogFragment();
+            fragment.show(getSupportFragmentManager(), "done");
         }
 
     }
@@ -237,7 +240,7 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
         mTour.getNodes(new Callback<List<Node>>() {
             @Override
             public void done(List<Node> result) {
-                mGeofenceList = new ArrayList<Geofence>();
+                mGeofenceList = new ArrayList<>();
                 for (Node node : result) {
                     mGeofenceList.add(new Geofence.Builder()
                             .setRequestId(node.getObjectId())
