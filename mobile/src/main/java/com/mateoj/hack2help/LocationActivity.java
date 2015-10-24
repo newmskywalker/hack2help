@@ -82,6 +82,8 @@ public abstract class LocationActivity extends AppCompatActivity implements Goog
                 .build();
     }
 
+
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -89,8 +91,9 @@ public abstract class LocationActivity extends AppCompatActivity implements Goog
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        mGoogleApiClient.disconnect();
+    protected void onDestroy() {
+        super.onDestroy();
+        mGoogleApiClient.connect();
     }
+
 }

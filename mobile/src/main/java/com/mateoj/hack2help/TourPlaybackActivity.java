@@ -1,12 +1,14 @@
 package com.mateoj.hack2help;
 
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
@@ -30,6 +32,7 @@ import com.mateoj.hack2help.data.model.Tour;
 import com.mateoj.hack2help.util.Callback;
 import com.mateoj.hack2help.util.LocationUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +48,7 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
     private List<Node> mNodes;
     private MediaPlayer mediaPlayer;
     private Marker currentMarker;
+    WifiManager.WifiLock wifiLock;
 
     private Tour mTour;
     @Override
@@ -76,7 +80,12 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        wifiLock = ((WifiManager) getSystemService(Context.WIFI_SERVICE))
+                .createWifiLock(WifiManager.WIFI_MODE_FULL, "mylock");
     }
+
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -106,8 +115,6 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
     protected void onStop() {
         clearFences();
         super.onStop();
-        if (mediaPlayer != null && mediaPlayer.isPlaying())
-            mediaPlayer.stop();
     }
 
     private PendingIntent getGeofencePendingIntent() {
@@ -122,6 +129,40 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
                 FLAG_UPDATE_CURRENT);
     }
 
+    private void onPlayNode(final Node node)
+    {
+        if (mediaPlayer == null) {
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
+        }
+
+        if (mediaPlayer.isPlaying())
+            mediaPlayer.stop();
+
+        try {
+            mediaPlayer.setDataSource(node.getAudioUrl());
+            mediaPlayer.prepare();
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    wifiLock.release();
+                }
+            });
+            wifiLock.acquire();
+            mediaPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Snackbar.make(findViewById(android.R.id.content), node.getTitle(),
+                        Snackbar.LENGTH_LONG).show();
+            }
+        });
+    }
+
     public void onEvent(Geofence geofence)
     {
         for (Geofence fence : mGeofenceList)
@@ -130,15 +171,7 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
             {
                 for (final Node node :mNodes) {
                     if (node.getObjectId().equals(fence.getRequestId())){
-                        mediaPlayer = MediaPlayer.create(TourPlaybackActivity.this, Uri.parse(node.getAudioUrl()));
-                        mediaPlayer.start();
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Snackbar.make(findViewById(android.R.id.content), node.getTitle(),
-                                        Snackbar.LENGTH_LONG).show();
-                            }
-                        });
+                        onPlayNode(node);
                     }
                 }
             }
