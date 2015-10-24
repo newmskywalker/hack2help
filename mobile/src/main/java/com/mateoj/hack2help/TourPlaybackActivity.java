@@ -3,6 +3,7 @@ package com.mateoj.hack2help;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -21,12 +22,14 @@ import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.mateoj.hack2help.data.model.Node;
 import com.mateoj.hack2help.data.model.Tour;
 import com.mateoj.hack2help.event.EnterFence;
@@ -257,15 +260,26 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
             @Override
             public void done(List<Node> result) {
                 mNodes = result;
-                if (result.size() > 0)
+                if (result.size() > 0) {
                     googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                             LocationUtils.geoPointToLatLng(result.get(0).getLocation()), DEFAULT_ZOOM_LEVEL));
+                }
+
+                PolylineOptions polylineOptions = new PolylineOptions();
                 for (Node node : result)
                 {
                     googleMap.addMarker(new MarkerOptions()
                             .position(LocationUtils.geoPointToLatLng(node.getLocation()))
                             .title(node.getTitle()));
+                    polylineOptions.add(LocationUtils.geoPointToLatLng(node.getLocation()));
                 }
+
+                polylineOptions
+                    .width(15)
+                    .color(Color.BLUE)
+                    .geodesic(true);
+
+                Polyline polyline = googleMap.addPolyline(polylineOptions);
             }
 
             @Override
