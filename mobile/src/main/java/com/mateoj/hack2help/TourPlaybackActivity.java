@@ -13,6 +13,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.ResultCallback;
@@ -127,6 +128,8 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
 
     private void onPlayNode(final Node node)
     {
+        node.setVisited(true);
+
         if (mediaPlayer == null) {
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -195,6 +198,14 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
                 }
             });
         }
+
+        boolean isDone = true;
+        for (Node node : mNodes)
+            isDone = node.isVisited();
+        if (isDone) {
+            Toast.makeText(this, "DONE", Toast.LENGTH_LONG).show();
+        }
+
     }
 
     private List<String> getFenceStringList()
