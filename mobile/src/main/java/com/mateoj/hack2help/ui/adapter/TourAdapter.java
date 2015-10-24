@@ -9,10 +9,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 import com.mateoj.hack2help.R;
 import com.mateoj.hack2help.TourDetailActivity;
 import com.mateoj.hack2help.data.model.Tour;
+import com.mateoj.hack2help.util.LocationUtils;
 import com.squareup.picasso.Picasso;
 
 import java.text.NumberFormat;
@@ -31,6 +33,7 @@ public class TourAdapter extends RecyclerView.Adapter {
     private Context mContext;
     private LayoutInflater mInflater;
     private List<Tour> mTours;
+    private LatLng latLng;
 
     public TourAdapter(Context context) {
         this.mContext = context;
@@ -44,6 +47,21 @@ public class TourAdapter extends RecyclerView.Adapter {
         mTours.clear();
         mTours.addAll(tours);
         notifyDataSetChanged();
+    }
+
+    public String buildMapUlr()
+    {
+        if (latLng == null)
+            return "https://maps.googleapis.com/maps/api/staticmap?center=Brooklyn+Bridge,New+York,NY&zoom=13&size=600x300&maptype=roadmap&markers=color:blue%7Clabel:S%7C40.702147,-74.015794&markers=color:green%7Clabel:G%7C40.711614,-74.012318 &markers=color:red%7Clabel:C%7C40.718217,-73.998284&key=" + mContext.getString(R.string.mapsApiKey);
+        else
+            return "https://maps.googleapis.com/maps/api/staticmap?center=" + latLng.latitude + "," + latLng.longitude + "&zoom=13&size=600x300&maptype=roadmap&markers=color:blue%7Clabel:S%7C" + latLng.latitude + "," + latLng.longitude + "&markers=color:green%7Clabel:G%7C40.711614,-74.012318 &markers=color:red%7Clabel:C%7C40.718217,-73.998284&key=" + mContext.getString(R.string.mapsApiKey);
+
+    }
+
+    public void setLatLng(LatLng latLng)
+    {
+        this.latLng = latLng;
+        notifyItemChanged(0);
     }
 
     @Override
@@ -68,8 +86,15 @@ public class TourAdapter extends RecyclerView.Adapter {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if (position == 0)
+        if (position == 0) {
+            HeaderViewholder viewholder = (HeaderViewholder) holder;
+            Picasso.with(mContext)
+                    .load(buildMapUlr())
+                    .noFade()
+                    .into(viewholder.mapView);
             return;
+        }
+
 
         Tour tour = getItem(position - 1);
         if (tour == null)
@@ -77,9 +102,11 @@ public class TourAdapter extends RecyclerView.Adapter {
         TourViewHolder viewHolder = (TourViewHolder) holder;
         viewHolder.title.setText(tour.getTitle());
         viewHolder.description.setText(tour.getDescription());
-        viewHolder.distance.setText(
-                String.format(mContext.getString(R.string.distance),
-                        NumberFormat.getInstance().format(tour.getDistance())));
+//        viewHolder.distance.setText(
+//                String.format(mContext.getString(R.string.distance),
+//                        NumberFormat.getInstance().format(tour.getDistance())));
+        viewHolder.distance.setText(String.format(mContext.getString(R.string.distance),
+                NumberFormat.getInstance().format(tour.getLocation().distanceInMilesTo(LocationUtils.latLngToParseGeo(latLng)))));
         viewHolder.duration.setText(mContext.getString(R.string.duration,
                 NumberFormat.getInstance().format(tour.getDuration())));
         if (!tour.getThumbUrl().equals(""))
@@ -139,18 +166,11 @@ public class TourAdapter extends RecyclerView.Adapter {
         @Bind(R.id.mapView)
         ImageView mapView;
 
-        GoogleMap map;
         public HeaderViewholder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-            Picasso.with(itemView.getContext())
-                    .load(buildMapUlr())
-                    .into(mapView);
-        }
 
-        public String buildMapUlr()
-        {
-            return "https://maps.googleapis.com/maps/api/staticmap?center=Brooklyn+Bridge,New+York,NY&zoom=13&size=600x300&maptype=roadmap&markers=color:blue%7Clabel:S%7C40.702147,-74.015794&markers=color:green%7Clabel:G%7C40.711614,-74.012318 &markers=color:red%7Clabel:C%7C40.718217,-73.998284&key=" + mapView.getContext().getString(R.string.mapsApiKey);
         }
     }
+
 }
