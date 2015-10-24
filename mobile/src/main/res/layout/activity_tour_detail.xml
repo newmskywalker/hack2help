@@ -13,6 +13,7 @@
         android:fitsSystemWindows="true"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:paddingBottom="1dp"
         android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.design.widget.CollapsingToolbarLayout
@@ -21,6 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/app_bar_height"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:expandedTitleTextAppearance="@style/TransparentText"
             app:contentScrim="?attr/colorPrimary">
             <fragment
                       android:layout_width="match_parent"
