@@ -22,8 +22,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.mateoj.hack2help.data.model.Node;
 import com.mateoj.hack2help.data.model.Tour;
 import com.mateoj.hack2help.util.Callback;
@@ -178,7 +178,6 @@ public class TourDetailActivity extends LocationActivity implements OnMapReadyCa
                 mNodes = result;
                 LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
-                PolylineOptions polylineOptions = new PolylineOptions();
                 for (Node node : result)
                 {
                     Marker maker = googleMap.addMarker(new MarkerOptions()
@@ -186,15 +185,9 @@ public class TourDetailActivity extends LocationActivity implements OnMapReadyCa
 
                     maker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_place_blue_24dp));
                     builder.include(LocationUtils.geoPointToLatLng(node.getLocation()));
-                    polylineOptions.add(LocationUtils.geoPointToLatLng(node.getLocation()));
                 }
 
-                polylineOptions
-                    .width(15)
-                    .color(getResources().getColor(R.color.colorAccent))
-                    .geodesic(true);
-
-                Polyline polyline = googleMap.addPolyline(polylineOptions);
+                new Pathing(googleMap, getResources().getColor(R.color.colorAccent)).addRoutes(result);
 
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 100));
             }
