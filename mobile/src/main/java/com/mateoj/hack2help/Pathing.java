@@ -24,9 +24,11 @@ import com.mateoj.hack2help.util.LocationUtils;
 public class Pathing {
     private GoogleMap googleMap;
     private int color;
+    private String apikey;
 
-    Pathing(GoogleMap googlemap, int color) {
+    Pathing(GoogleMap googlemap, int color, String apikey) {
         this.googleMap = googlemap;
+        this.apikey = apikey;
         this.color = color;
     }
 
@@ -43,11 +45,12 @@ public class Pathing {
 
     private String getMapsApiDirectionsUrl(LatLng o, LatLng d) {
         String waypoints = "waypoints=optimize:true";
-        String origin = "origin=" + o.latitude + "," + o.longitude;;
-        String destination = "destination=" + d.latitude + "," + d.longitude;;
+        String origin = "origin=" + o.latitude + "," + o.longitude;
+        String destination = "destination=" + d.latitude + "," + d.longitude;
+        String apikey = "key=" + this.apikey;
 
         String sensor = "sensor=false";
-        String params = origin + "&" + destination + "&" + sensor;
+        String params = apikey + "&" + origin + "&" + destination + "&" + sensor;
         String output = "json";
         String url = "https://maps.googleapis.com/maps/api/directions/"
                 + output + "?" + params;

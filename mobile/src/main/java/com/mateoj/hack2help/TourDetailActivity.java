@@ -187,7 +187,7 @@ public class TourDetailActivity extends LocationActivity implements OnMapReadyCa
                     builder.include(LocationUtils.geoPointToLatLng(node.getLocation()));
                 }
 
-                new Pathing(googleMap, getResources().getColor(R.color.colorAccent)).addRoutes(result);
+                new Pathing(googleMap, getResources().getColor(R.color.colorAccent), getString(R.string.mapsApiKey)).addRoutes(result);
 
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 100));
             }
