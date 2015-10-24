@@ -53,14 +53,17 @@ public abstract class LocationActivity extends AppCompatActivity implements Goog
 
     private void stopLocationUpdates()
     {
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                mGoogleApiClient, this);
+        if (mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(
+                    mGoogleApiClient, this);
+        }
     }
 
     private LocationRequest buildLocationRequest() {
         LocationRequest request = new LocationRequest();
         request.setInterval(1000);
         request.setFastestInterval(500);
+        request.setSmallestDisplacement(2);
         request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         return request;
     }

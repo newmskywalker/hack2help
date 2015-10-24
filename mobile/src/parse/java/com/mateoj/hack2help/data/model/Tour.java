@@ -9,6 +9,7 @@ import com.mateoj.hack2help.util.StringUtils;
 import com.parse.FindCallback;
 import com.parse.ParseClassName;
 import com.parse.ParseException;
+import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
@@ -26,6 +27,7 @@ public class Tour extends ParseObject implements Parcelable{
     public static final String KEY_NODE_RELATION = "point";
     public static final String KEY_DISTANCE = "distance";
     public static final String KEY_DURATION = "duration";
+    public static final String KEY_START_POINT = "startPoint";
 
     private List<Node> nodes;
 
@@ -67,6 +69,11 @@ public class Tour extends ParseObject implements Parcelable{
     public String getThumbUrl()
     {
         return (getParseFile(KEY_THUMB)) == null ? "" : getParseFile(KEY_THUMB).getUrl();
+    }
+
+    public ParseGeoPoint getLocation()
+    {
+        return getParseGeoPoint(KEY_START_POINT);
     }
 
     public double getDistance()

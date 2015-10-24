@@ -106,16 +106,6 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
         return builder.build();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onStop() {
-        clearFences();
-        super.onStop();
-    }
 
     private PendingIntent getGeofencePendingIntent() {
         // Reuse the PendingIntent if we already have it.
@@ -141,6 +131,7 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
             mediaPlayer.stop();
 
         try {
+            mediaPlayer.reset();
             mediaPlayer.setDataSource(node.getAudioUrl());
             mediaPlayer.prepare();
             mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -169,7 +160,7 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
         {
             if (fence.getRequestId().equals(geofence.getRequestId()))
             {
-                for (final Node node :mNodes) {
+                for (final Node node : mNodes) {
                     if (node.getObjectId().equals(fence.getRequestId())){
                         onPlayNode(node);
                     }
@@ -184,6 +175,13 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
         for (Node node : mNodes)
             list.add(node.getObjectId());
         return list;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        clearFences();
+        mediaPlayer = null;
     }
 
     private void clearFences() {

@@ -6,19 +6,12 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.mateoj.hack2help.data.model.Tour;
 import com.mateoj.hack2help.ui.adapter.TourAdapter;
@@ -29,16 +22,16 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, OnMapReadyCallback {
+public class MainActivity extends LocationActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
     public static String TAG = MainActivity.class.getSimpleName();
 
     @Bind(R.id.recycler_main) RecyclerView recyclerView;
 
     private TourAdapter mAdapter;
-    private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
+
+    private boolean needsToFetch = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,17 +54,6 @@ public class MainActivity extends AppCompatActivity
         mAdapter = new TourAdapter(this);
         recyclerView.setAdapter(mAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mGoogleApiClient = buildLocationClient();
-        fetchNearbyTours();
-    }
-
-    private GoogleApiClient buildLocationClient()
-    {
-        return new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
     }
 
     @Override
@@ -80,15 +62,10 @@ public class MainActivity extends AppCompatActivity
         mGoogleApiClient.connect();
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        mGoogleApiClient.disconnect();
-    }
 
     private void fetchNearbyTours()
     {
-        ApiHelper.getToursNearby(new LatLng(30.44, -65.00), new Callback<List<Tour>>() {
+        ApiHelper.getToursNearby(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()), new Callback<List<Tour>>() {
             @Override
             public void done(List<Tour> result) {
                 mAdapter.setTours(result);
@@ -96,7 +73,7 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void error(com.mateoj.hack2help.util.Error error) {
-
+                needsToFetch = true;
             }
         });
     }
@@ -159,24 +136,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onConnected(Bundle bundle) {
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        if (mLastLocation != null)
-            Log.d(TAG, mLastLocation.toString());
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        mGoogleApiClient.connect();
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.e(TAG, connectionResult.toString());
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-
+    public void onLocationChanged(Location location) {
+        if (location != null) {
+            mLastLocation = location;
+            mAdapter.setLatLng(new LatLng(location.getLatitude(), location.getLongitude()));
+            if(needsToFetch) {
+                fetchNearbyTours();
+                needsToFetch = false;
+            }
+        }
     }
 }

@@ -11,10 +11,12 @@ import com.parse.ParseObject;
  * Created by jose on 10/23/15.
  */
 public class HackApp extends Application{
+
     @Override
     public void onCreate() {
         super.onCreate();
         initParse();
+
     }
 
     private void initParse()

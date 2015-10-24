@@ -11,4 +11,9 @@ public class LocationUtils {
     {
         return new LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
     }
+
+    public static ParseGeoPoint latLngToParseGeo(LatLng latLng)
+    {
+        return new ParseGeoPoint(latLng.latitude, latLng.longitude);
+    }
 }
