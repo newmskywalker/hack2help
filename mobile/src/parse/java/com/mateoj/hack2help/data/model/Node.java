@@ -15,6 +15,16 @@ public class Node extends ParseObject {
     public static final String KEY_LOCATION = "GeoPoint";
     public static final String KEY_AUDIO = "Audio";
 
+    private boolean visited = false;
+
+    public boolean isVisited() {
+        return visited;
+    }
+
+    public void setVisited(boolean visited) {
+        this.visited = visited;
+    }
+
     public String getTitle()
     {
         return StringUtils.notNull(getString(KEY_TITLE));
