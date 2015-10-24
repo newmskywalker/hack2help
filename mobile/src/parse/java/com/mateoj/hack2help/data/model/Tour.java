@@ -28,6 +28,7 @@ public class Tour extends ParseObject implements Parcelable{
     public static final String KEY_DISTANCE = "distance";
     public static final String KEY_DURATION = "duration";
     public static final String KEY_START_POINT = "startPoint";
+    public static final String KEY_ORDER = "order";
 
     private List<Node> nodes;
 
@@ -141,6 +142,7 @@ public class Tour extends ParseObject implements Parcelable{
         {
             getNodeRelation()
                     .getQuery()
+                    .orderByAscending(KEY_ORDER)
                     .findInBackground(new FindCallback<Node>() {
                         @Override
                         public void done(List<Node> objects, ParseException e) {
