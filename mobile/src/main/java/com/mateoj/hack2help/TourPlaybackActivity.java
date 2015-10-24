@@ -29,6 +29,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.mateoj.hack2help.data.model.Node;
 import com.mateoj.hack2help.data.model.Tour;
+import com.mateoj.hack2help.event.EnterFence;
+import com.mateoj.hack2help.event.ExitFence;
 import com.mateoj.hack2help.util.Callback;
 import com.mateoj.hack2help.util.LocationUtils;
 
@@ -40,6 +42,8 @@ import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
 
 public class TourPlaybackActivity extends LocationActivity implements OnMapReadyCallback, ResultCallback {
+    private static final int DEFAULT_ZOOM_LEVEL = 17;
+    private static final int CLOSE_ZOOM_LEVEL = 20;
 
     SupportMapFragment mapFragment;
     private boolean isMapReady = false;
@@ -49,6 +53,7 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
     private MediaPlayer mediaPlayer;
     private Marker currentMarker;
     WifiManager.WifiLock wifiLock;
+    GoogleMap mGoogleMap;
 
     private Tour mTour;
     @Override
@@ -90,10 +95,11 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
     @Override
     public void onMapReady(GoogleMap googleMap) {
         isMapReady = true;
+        mGoogleMap = googleMap;
         LatLng here = new LatLng(36.8475, -76.2913);
         currentMarker = googleMap.addMarker(new MarkerOptions().position(here).title("Me"));
         currentMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_account_circle_24dp));
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(here, 15));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(here, DEFAULT_ZOOM_LEVEL));
         drawMarks(googleMap);
     }
 
@@ -148,14 +154,24 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (mGoogleMap != null)
+                    mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(CLOSE_ZOOM_LEVEL));
+
                 Snackbar.make(findViewById(android.R.id.content), node.getTitle(),
                         Snackbar.LENGTH_LONG).show();
             }
         });
     }
 
-    public void onEvent(Geofence geofence)
+    public void onEvent(EnterFence event)
     {
+        Geofence geofence;
+        if (event.getGeofences() != null && event.getGeofences().size() > 0) {
+            geofence = event.getGeofences().get(0);
+        } else {
+            return;
+        }
+
         for (Geofence fence : mGeofenceList)
         {
             if (fence.getRequestId().equals(geofence.getRequestId()))
@@ -163,9 +179,21 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
                 for (final Node node : mNodes) {
                     if (node.getObjectId().equals(fence.getRequestId())){
                         onPlayNode(node);
+                        return;
                     }
                 }
             }
+        }
+    }
+
+    public void onEvent(ExitFence exitFence) {
+        if (mGoogleMap != null) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(DEFAULT_ZOOM_LEVEL));
+                }
+            });
         }
     }
 
@@ -182,6 +210,7 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
         super.onDestroy();
         clearFences();
         mediaPlayer = null;
+        EventBus.getDefault().unregister(this);
     }
 
     private void clearFences() {
@@ -230,7 +259,7 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
                 mNodes = result;
                 if (result.size() > 0)
                     googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                            LocationUtils.geoPointToLatLng(result.get(0).getLocation()), 12));
+                            LocationUtils.geoPointToLatLng(result.get(0).getLocation()), DEFAULT_ZOOM_LEVEL));
                 for (Node node : result)
                 {
                     googleMap.addMarker(new MarkerOptions()

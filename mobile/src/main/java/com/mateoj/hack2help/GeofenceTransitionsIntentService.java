@@ -6,6 +6,8 @@ import android.util.Log;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
+import com.mateoj.hack2help.event.EnterFence;
+import com.mateoj.hack2help.event.ExitFence;
 
 import java.util.List;
 
@@ -36,15 +38,13 @@ public class GeofenceTransitionsIntentService extends IntentService {
         // Test that the reported transition was of interest.
 //        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||
 //                geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+        List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
+
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
 
             // Get the geofences that were triggered. A single event can trigger
             // multiple geofences.
-            List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
-            for (Geofence geo : triggeringGeofences)
-            {
-                EventBus.getDefault().post(geo);
-            }
+            EventBus.getDefault().post(new EnterFence(triggeringGeofences));
 
             // Get the transition details as a String.
             Log.d(TAG, "" + geofenceTransition);
@@ -57,6 +57,10 @@ public class GeofenceTransitionsIntentService extends IntentService {
             // Send notification and log the transition details.
 //            sendNotification(geofenceTransitionDetails);
             Log.i(TAG, "" + geofenceTransition);
+        } else if(geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+
+            EventBus.getDefault().post(new ExitFence(triggeringGeofences));
+
         } else {
             // Log the error.
             Log.e(TAG, "geofence error");

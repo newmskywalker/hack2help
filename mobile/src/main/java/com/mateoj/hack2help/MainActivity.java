@@ -139,8 +139,8 @@ public class MainActivity extends LocationActivity
     public void onLocationChanged(Location location) {
         if (location != null) {
             mLastLocation = location;
-            mAdapter.setLatLng(new LatLng(location.getLatitude(), location.getLongitude()));
             if(needsToFetch) {
+                mAdapter.setLatLng(new LatLng(location.getLatitude(), location.getLongitude()));
                 fetchNearbyTours();
                 needsToFetch = false;
             }

@@ -17,11 +17,13 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.mateoj.hack2help.data.model.Node;
 import com.mateoj.hack2help.data.model.Tour;
 import com.mateoj.hack2help.util.Callback;
+import com.mateoj.hack2help.util.LocationUtils;
 import com.squareup.picasso.Picasso;
 
 import java.text.NumberFormat;
@@ -35,6 +37,7 @@ public class TourDetailActivity extends LocationActivity implements OnMapReadyCa
 
     public static final String EXTRA_TOUR = "tour";
     public static final String TAG = TourDetailActivity.class.getSimpleName();
+    private static final int DEFAULT_ZOOM_LEVEL = 15;
 
     SupportMapFragment mapFragment;
 
@@ -163,7 +166,9 @@ public class TourDetailActivity extends LocationActivity implements OnMapReadyCa
         LatLng here = new LatLng(36.8475, -76.2913);
         currentMarker = googleMap.addMarker(new MarkerOptions().position(here).title("Me"));
 
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(here));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(here, DEFAULT_ZOOM_LEVEL));
+
+        drawMarks(googleMap);
     }
 
 
@@ -172,4 +177,32 @@ public class TourDetailActivity extends LocationActivity implements OnMapReadyCa
         if (isMapReady)
             currentMarker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
     }
+
+    private void drawMarks(final GoogleMap googleMap)
+    {
+        mTour.getNodes(new Callback<List<Node>>() {
+            @Override
+            public void done(List<Node> result) {
+                mNodes = result;
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+                for (Node node : result)
+                {
+                    googleMap.addMarker(new MarkerOptions()
+                            .position(LocationUtils.geoPointToLatLng(node.getLocation()))
+                            .title(node.getTitle()));
+                    builder.include(LocationUtils.geoPointToLatLng(node.getLocation()));
+                }
+
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 0));
+
+            }
+
+            @Override
+            public void error(com.mateoj.hack2help.util.Error error) {
+
+            }
+        });
+    }
+
 }
