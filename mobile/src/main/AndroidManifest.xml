@@ -3,6 +3,7 @@
     package="com.mateoj.hack2help" >
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -15,6 +16,8 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/mapsApiKey" />
+
+        <service android:name=".GeofenceTransitionsIntentService"/>
 
         <activity
             android:name=".MainActivity"

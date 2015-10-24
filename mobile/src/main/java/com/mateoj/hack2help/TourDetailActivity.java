@@ -1,12 +1,11 @@
 package com.mateoj.hack2help;
 
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -18,11 +17,11 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.mateoj.hack2help.data.model.Node;
 import com.mateoj.hack2help.data.model.Tour;
-import com.parse.FindCallback;
-import com.parse.ParseException;
+import com.mateoj.hack2help.util.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.text.NumberFormat;
@@ -32,12 +31,15 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
 
-public class TourDetailActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class TourDetailActivity extends LocationActivity implements OnMapReadyCallback {
 
     public static final String EXTRA_TOUR = "tour";
     public static final String TAG = TourDetailActivity.class.getSimpleName();
 
     SupportMapFragment mapFragment;
+
+    Marker currentMarker;
+    private boolean isMapReady = false;
 
     @Bind(R.id.toolbar)
     Toolbar toolbar;
@@ -97,18 +99,17 @@ public class TourDetailActivity extends AppCompatActivity implements OnMapReadyC
 
     private void fetchNodes()
     {
-        mTour.getNodeRelation()
-                .getQuery()
-                .findInBackground(new FindCallback<Node>() {
-                    @Override
-                    public void done(List<Node> objects, ParseException e) {
-                        if (e != null) {
-                            Log.e(TAG, e.getLocalizedMessage());
-                            e.printStackTrace();
-                        }
-                        initNodes(objects);
-                    }
-                });
+        mTour.getNodes(new Callback<List<Node>>() {
+            @Override
+            public void done(List<Node> result) {
+                initNodes(result);
+            }
+
+            @Override
+            public void error(com.mateoj.hack2help.util.Error error) {
+
+            }
+        });
     }
 
     private void initNodes(List<Node> nodes)
@@ -157,8 +158,18 @@ public class TourDetailActivity extends AppCompatActivity implements OnMapReadyC
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        isMapReady = true;
+
         LatLng here = new LatLng(36.8475, -76.2913);
-        googleMap.addMarker(new MarkerOptions().position(here).title("DE"));
+        currentMarker = googleMap.addMarker(new MarkerOptions().position(here).title("Me"));
+
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(here));
+    }
+
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if (isMapReady)
+            currentMarker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
     }
 }
