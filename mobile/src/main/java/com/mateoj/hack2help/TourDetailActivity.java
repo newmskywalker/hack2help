@@ -5,11 +5,12 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -69,7 +70,7 @@ public class TourDetailActivity extends LocationActivity implements OnMapReadyCa
     ImageView thumImage;
 
     @Bind(R.id.nodes)
-    LinearLayout nodesLayout;
+    RecyclerView nodesLayout;
 
     private Tour mTour;
     private List<Node> mNodes;
@@ -118,21 +119,8 @@ public class TourDetailActivity extends LocationActivity implements OnMapReadyCa
     private void initNodes(List<Node> nodes)
     {
         mNodes = nodes;
-        nodesLayout.removeAllViews();
-        LayoutInflater inflater = getLayoutInflater();
-        for (Node node : nodes)
-        {
-            View view = inflater.inflate(R.layout.row_node, nodesLayout, false);
-            ImageView imageView = (ImageView) view.findViewById(R.id.image);
-            TextView title = (TextView) view.findViewById(R.id.title);
-            if (!node.getThumbUrl().equals(""))
-                Picasso.with(this)
-                        .load(node.getThumbUrl())
-                        .into(imageView);
-            title.setText(node.getTitle());
-            nodesLayout.addView(view);
-        }
-
+        nodesLayout.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        nodesLayout.setAdapter(new NodesAdapter());
     }
 
     private void initLayout()
@@ -203,6 +191,43 @@ public class TourDetailActivity extends LocationActivity implements OnMapReadyCa
 
             }
         });
+    }
+    public static class NodeViewHolder extends RecyclerView.ViewHolder {
+        @Bind(R.id.image)
+        ImageView image;
+
+        @Bind(R.id.title)
+        TextView title;
+
+        public NodeViewHolder(View itemView) {
+            super(itemView);
+            ButterKnife.bind(this, itemView);
+        }
+    }
+
+    public class NodesAdapter extends RecyclerView.Adapter<NodeViewHolder> {
+
+        @Override
+        public NodeViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = getLayoutInflater().inflate(R.layout.row_node, parent, false);
+            return new NodeViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(NodeViewHolder holder, int position) {
+            Node node = mNodes.get(position);
+            if (!node.getThumbUrl().equals(""))
+                Picasso.with(TourDetailActivity.this)
+                        .load(node.getThumbUrl())
+                        .into(holder.image);
+
+            holder.title.setText(node.getTitle());
+        }
+
+        @Override
+        public int getItemCount() {
+            return (mNodes == null) ? 0 : mNodes.size();
+        }
     }
 
 }
