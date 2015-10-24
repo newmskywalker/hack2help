@@ -81,12 +81,17 @@ public class TourPlaybackActivity extends LocationActivity implements OnMapReady
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        final FloatingActionButton playPauseButton = (FloatingActionButton) findViewById(R.id.play_pause);
+        playPauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                    playPauseButton.setImageResource(R.drawable.ic_media_play);
+                } else {
+                    mediaPlayer.start();
+                    playPauseButton.setImageResource(R.drawable.ic_media_pause);
+                }
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
