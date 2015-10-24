@@ -23,10 +23,11 @@ import com.mateoj.hack2help.util.LocationUtils;
 
 public class Pathing {
     private GoogleMap googleMap;
-    private Color color;
+    private int color;
 
-    Pathing(GoogleMap googlemap, Color color) {
+    Pathing(GoogleMap googlemap, int color) {
         this.googleMap = googlemap;
+        this.color = color;
     }
 
     public void addRoutes(List<Node> points)
