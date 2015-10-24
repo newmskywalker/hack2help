@@ -12,8 +12,12 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <ImageView
+        android:layout_height="match_parent"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin">
+        <com.mateoj.hack2help.ui.adapter.CircleImageView
             android:id="@+id/image"
             android:layout_width="120dp"
             android:layout_height="120dp"
@@ -26,20 +30,26 @@
             android:layout_height="wrap_content"
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:paddingRight="@dimen/activity_horizontal_margin"
+            fontPath="fonts/hipster.ttf"
+            android:textAllCaps="true"
             android:layout_toRightOf="@id/image"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            tools:text="Granby Street History Tour"/>
+            android:textSize="30sp"
+            tools:text="Granby Street History Tour"
+            card_view:ignore="MissingPrefix"/>
         <TextView
             android:id="@+id/distance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/title"
+            android:textSize="10sp"
             android:layout_toRightOf="@id/image"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"/>
         <TextView
             android:id="@+id/duration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textSize="10sp"
             android:layout_below="@id/title"
             android:layout_toRightOf="@id/distance"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
@@ -53,7 +63,6 @@
             android:layout_toRightOf="@id/image"
             android:maxLines="3"
             android:ellipsize="marquee"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:paddingLeft="@dimen/activity_horizontal_margin"
             tools:text="An awesome historic tour of the city of Norfolk at granby street and monticello"/>
 
