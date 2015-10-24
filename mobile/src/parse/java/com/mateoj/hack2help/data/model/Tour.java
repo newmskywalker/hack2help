@@ -3,11 +3,17 @@ package com.mateoj.hack2help.data.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.mateoj.hack2help.util.Callback;
+import com.mateoj.hack2help.util.Error;
 import com.mateoj.hack2help.util.StringUtils;
+import com.parse.FindCallback;
 import com.parse.ParseClassName;
+import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
+
+import java.util.List;
 
 /**
  * Created by jose on 10/23/15.
@@ -20,6 +26,8 @@ public class Tour extends ParseObject implements Parcelable{
     public static final String KEY_NODE_RELATION = "point";
     public static final String KEY_DISTANCE = "distance";
     public static final String KEY_DURATION = "duration";
+
+    private List<Node> nodes;
 
     public Tour()
     {
@@ -118,5 +126,28 @@ public class Tour extends ParseObject implements Parcelable{
         parcel.writeString(getThumbUrl());
         parcel.writeDouble(getDistance());
         parcel.writeDouble(getDuration());
+    }
+
+    public void getNodes(final Callback<List<Node>> cb)
+    {
+        if (nodes == null)
+        {
+            getNodeRelation()
+                    .getQuery()
+                    .findInBackground(new FindCallback<Node>() {
+                        @Override
+                        public void done(List<Node> objects, ParseException e) {
+                            if (e != null) {
+                                cb.error(new Error(e.getMessage(), e.getCode()));
+                                e.printStackTrace();
+                            } else {
+                                nodes = objects;
+                                cb.done(nodes);
+                            }
+                        }
+                    });
+        } else {
+            cb.done(nodes);
+        }
     }
 }
