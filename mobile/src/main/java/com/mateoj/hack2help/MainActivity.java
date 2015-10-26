@@ -56,13 +56,6 @@ public class MainActivity extends LocationActivity
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mGoogleApiClient.connect();
-    }
-
-
     private void fetchNearbyTours()
     {
         ApiHelper.getToursNearby(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()), new Callback<List<Tour>>() {
