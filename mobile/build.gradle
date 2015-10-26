@@ -25,11 +25,19 @@ android {
             applicationId 'com.mateoj.hack2help.mock'
         }
     }
+    signingConfigs {
+        release {
+            storeFile file("release.keystore")
+            storePassword "SuperPassword13"
+            keyAlias "alias_name"
+            keyPassword "SuperPassword13"
+        }
+    }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    wearApp project(':wear')
+//    wearApp project(':wear')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:22.1.0'
     compile 'com.google.android.gms:play-services:7.8.0'
