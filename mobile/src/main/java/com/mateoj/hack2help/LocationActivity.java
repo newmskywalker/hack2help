@@ -104,7 +104,7 @@ public abstract class LocationActivity extends AppCompatActivity implements Goog
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mGoogleApiClient.connect();
+        mGoogleApiClient.disconnect();
     }
 
 }
